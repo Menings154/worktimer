@@ -10,6 +10,9 @@
 #define OLED_RESET     4 // Reset pin # (or -1 if sharing Arduino reset pin) verstehe nicht so ganz was das macht
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
+int buttonApin = 8;
+int buttonBpin = 3;
+
 void setup() {
   Serial.begin(9600);
   Serial.println("I'm here");
@@ -18,6 +21,11 @@ void setup() {
     Serial.println(F("SSD1306 allocation failed"));
     for(;;); // Don't proceed, loop forever
   }
+
+
+  // here comes the code for the button
+  pinMode(buttonApin, INPUT_PULLUP);
+  
 
   // Show initial display buffer contents on the screen --
   // the library initializes this with an Adafruit splash screen.
@@ -50,6 +58,15 @@ void loop() {
   determine_time(28800 - total_seconds, timevalue2);
   display_time(timevalue2);
   display.display();
+
+  // code for the button
+  if (digitalRead(buttonApin) == LOW) {
+    display.clearDisplay();
+    display.setCursor(18, 24);
+    display.print("Button A pressed");
+    display.display();
+    delay(1000);
+  }
 }
 
 // helper functions
