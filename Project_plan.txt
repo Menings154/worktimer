@@ -1,0 +1,6 @@
+How should the programm work:
+2 counters
+	- from zero upwards
+		should be resetable with button A, but second timer should not be reseted
+	- from 8 h downwards
+		should be resetable with button B

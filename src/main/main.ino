@@ -11,7 +11,11 @@
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 int buttonApin = 8;
-int buttonBpin = 3;
+int buttonBpin = 7;
+
+// couonter for the different functionalities
+long old_millis_session = 0;
+long old_millis_total = 0;
 
 void setup() {
   Serial.begin(9600);
@@ -25,6 +29,7 @@ void setup() {
 
   // here comes the code for the button
   pinMode(buttonApin, INPUT_PULLUP);
+  pinMode(buttonBpin, INPUT_PULLUP);
   
 
   // Show initial display buffer contents on the screen --
@@ -39,7 +44,9 @@ void setup() {
 
 void loop() {
 
-  int total_seconds = millis()/1000;
+  long total_millis = millis();
+  int total_seconds_session = (total_millis - old_millis_session) / 1000;
+  int total_seconds_total = (total_millis - old_millis_total) / 1000;
 
   // timer für die aktuelle Session
   display.clearDisplay();
@@ -47,7 +54,7 @@ void loop() {
   display.print("Session: ");
   display.setCursor(18,16);
   int timevalue[3] = {0 ,0, 0};
-  determine_time(total_seconds, timevalue);
+  determine_time(total_seconds_session, timevalue);
   display_time(timevalue);
   
   // total 8-h timer
@@ -55,20 +62,22 @@ void loop() {
   display.print("Total: ");
   display.setCursor(18,48);
   int timevalue2[3] = {0 ,0, 0};
-  determine_time(28800 - total_seconds, timevalue2);
+  determine_time(28800 - total_seconds_total, timevalue2);
   display_time(timevalue2);
   display.display();
 
   // code for the button
   if (digitalRead(buttonApin) == LOW) {
-    display.clearDisplay();
-    display.setCursor(18, 24);
-    display.print("Button A pressed");
-    display.display();
-    delay(1000);
+    old_millis_session = total_millis;
+    Serial.print(old_millis_session);
   }
-}
 
+  if (digitalRead(buttonBpin) == LOW) {
+    old_millis_total = total_millis;
+    Serial.print(old_millis_total);
+  }
+  delay(3000);
+}
 // helper functions
 void determine_time(int total_seconds, int *a) {
   int time_now = total_seconds;
@@ -79,9 +88,6 @@ void determine_time(int total_seconds, int *a) {
 }
 
 void display_time(int a[3]) {
-  Serial.println(a[0]);
-  Serial.println(a[1]);
-  Serial.println(a[2]);
   if (a[0] < 10){
     display.print(0);
   }
