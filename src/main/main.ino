@@ -13,47 +13,69 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 int buttonApin = 8;
 int buttonBpin = 7;
 
-// couonter for the different functionalities
+// counter for the different functionalities
 long old_millis_session = 0;
 long old_millis_total = 0;
 
+int timevalue[3] = {0 ,0, 0}; // array for session
+int timevalue2[3] = {0 ,0, 0}; // array for total
+
+long total_millis;
+int total_seconds_session;
+int total_seconds_total;
+
+long temp = 0;
+int phase = 0;
+
 void setup() {
   Serial.begin(9600);
-  Serial.println("I'm here");
   // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
   if(!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
     Serial.println(F("SSD1306 allocation failed"));
     for(;;); // Don't proceed, loop forever
   }
-
-
-  // here comes the code for the button
-  pinMode(buttonApin, INPUT_PULLUP);
-  pinMode(buttonBpin, INPUT_PULLUP);
-  
-
   // Show initial display buffer contents on the screen --
   // the library initializes this with an Adafruit splash screen.
   display.display();
   delay(2000); // Pause for 2 seconds
-
   display.setTextColor(SSD1306_WHITE);
   display.setTextSize(2);
   display.setTextWrap(true);
+
+  // here comes the code for the button
+  pinMode(buttonApin, INPUT_PULLUP);
+  pinMode(buttonBpin, INPUT_PULLUP);
 }
 
 void loop() {
+  total_millis = millis();
+  total_seconds_session = (total_millis - old_millis_session) / 1000;
+  total_seconds_total = (total_millis - old_millis_total) / 1000;
+  Serial.println(phase);
 
-  long total_millis = millis();
-  int total_seconds_session = (total_millis - old_millis_session) / 1000;
-  int total_seconds_total = (total_millis - old_millis_total) / 1000;
-
+  switch (phase){
+    case 0:
+      Serial.println("I'm in phase 0.");
+      normal_mode(total_seconds_session, total_seconds_total);
+      break;
+      
+    case 1:
+      Serial.println("I'm in phase 1.");
+      button_A_pressed_mode(&old_millis_session, &phase);
+      break;
+      
+    case 2:
+      Serial.println("I'm in phase 2.");
+      button_B_pressed_mode(&old_millis_session, &old_millis_total, &phase);
+      break;
+  }
+}
+void normal_mode(int total_seconds_session, int total_seconds_total){
   // timer für die aktuelle Session
   display.clearDisplay();
   display.setCursor(18,0);
   display.print("Session: ");
   display.setCursor(18,16);
-  int timevalue[3] = {0 ,0, 0};
   determine_time(total_seconds_session, timevalue);
   display_time(timevalue);
   
@@ -61,30 +83,47 @@ void loop() {
   display.setCursor(18,32);
   display.print("Total: ");
   display.setCursor(18,48);
-  int timevalue2[3] = {0 ,0, 0};
   determine_time(28800 - total_seconds_total, timevalue2);
   display_time(timevalue2);
   display.display();
 
-  // code for the button
   if (digitalRead(buttonApin) == LOW) {
-    old_millis_session = total_millis;
-    Serial.print(old_millis_session);
+    temp = millis();
+    delay(2000);
+    phase = 1;
   }
 
   if (digitalRead(buttonBpin) == LOW) {
-    old_millis_total = total_millis;
-    Serial.print(old_millis_total);
+    delay(2000);
+    phase = 2;
   }
-  delay(3000);
 }
+
+void button_A_pressed_mode(long *old_millis_session, int *phase){
+  if (digitalRead(buttonApin) == LOW) {
+    delay(2000);
+    *old_millis_session = millis();
+    *phase = 0;
+    old_millis_total += (millis()-temp);
+    Serial.print((temp-millis()));
+  }
+}
+
+void button_B_pressed_mode(long *old_millis_session, long *old_millis_total, int *phase){
+  if (digitalRead(buttonBpin) == LOW) {
+    delay(2000);
+    *old_millis_session = millis();
+    *old_millis_total = millis();
+    *phase = 0;
+  }
+}
+
 // helper functions
 void determine_time(int total_seconds, int *a) {
   int time_now = total_seconds;
   a[2] = time_now % 60;
   a[1] = (time_now / 60) % 60;
   a[0] = (time_now / 60 / 60) % 60;
-
 }
 
 void display_time(int a[3]) {
