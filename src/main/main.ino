@@ -28,6 +28,7 @@ long temp = 0;
 int phase = 0;
 
 void setup() {
+  display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS);
   display.display();
   delay(2000); // Pause for 2 seconds
   display.setTextColor(SSD1306_WHITE);
