@@ -28,14 +28,6 @@ long temp = 0;
 int phase = 0;
 
 void setup() {
-  Serial.begin(9600);
-  // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
-  if(!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
-    Serial.println(F("SSD1306 allocation failed"));
-    for(;;); // Don't proceed, loop forever
-  }
-  // Show initial display buffer contents on the screen --
-  // the library initializes this with an Adafruit splash screen.
   display.display();
   delay(2000); // Pause for 2 seconds
   display.setTextColor(SSD1306_WHITE);
@@ -51,21 +43,17 @@ void loop() {
   total_millis = millis();
   total_seconds_session = (total_millis - old_millis_session) / 1000;
   total_seconds_total = (total_millis - old_millis_total) / 1000;
-  Serial.println(phase);
 
   switch (phase){
     case 0:
-      Serial.println("I'm in phase 0.");
       normal_mode(total_seconds_session, total_seconds_total);
       break;
       
     case 1:
-      Serial.println("I'm in phase 1.");
       button_A_pressed_mode(&old_millis_session, &phase);
       break;
       
     case 2:
-      Serial.println("I'm in phase 2.");
       button_B_pressed_mode(&old_millis_session, &old_millis_total, &phase);
       break;
   }
@@ -105,7 +93,6 @@ void button_A_pressed_mode(long *old_millis_session, int *phase){
     *old_millis_session = millis();
     *phase = 0;
     old_millis_total += (millis()-temp);
-    Serial.print((temp-millis()));
   }
 }
 
