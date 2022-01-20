@@ -10,8 +10,8 @@
 #define OLED_RESET     4 // Reset pin # (or -1 if sharing Arduino reset pin) verstehe nicht so ganz was das macht
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
-int buttonApin = 8;
-int buttonBpin = 7;
+int buttonApin = 14;
+int buttonBpin = 15;
 
 // counter for the different functionalities
 long old_millis_session = 0;
@@ -89,12 +89,12 @@ void normal_mode(int total_seconds_session, int total_seconds_total){
 
   if (digitalRead(buttonApin) == LOW) {
     temp = millis();
-    delay(2000);
+    delay(1000);
     phase = 1;
   }
 
   if (digitalRead(buttonBpin) == LOW) {
-    delay(2000);
+    delay(1000);
     phase = 2;
   }
 }
